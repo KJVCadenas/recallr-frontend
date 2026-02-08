@@ -19,7 +19,7 @@ export function LoginForm() {
     e.preventDefault();
     // Mock authentication - just set a flag in localStorage
     localStorage.setItem("isAuthenticated", "true");
-    router.push("/");
+    router.push("/home");
   };
 
   return (
