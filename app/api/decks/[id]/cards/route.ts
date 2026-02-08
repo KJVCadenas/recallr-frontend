@@ -1,4 +1,4 @@
-import { getCards, createCard } from "@/lib/controllers/cardController";
+import { getCards, createCard } from "@/lib/api/controllers/cardController";
 
 export async function GET(
   request: Request,

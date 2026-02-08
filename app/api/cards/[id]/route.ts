@@ -2,7 +2,7 @@ import {
   getCard,
   updateCard,
   deleteCard,
-} from "@/lib/controllers/cardController";
+} from "@/lib/api/controllers/cardController";
 import { NextRequest } from "next/server";
 
 export async function GET(

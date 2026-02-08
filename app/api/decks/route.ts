@@ -1,4 +1,4 @@
-import { getDecks, createDeck } from "@/lib/controllers/deckController";
+import { getDecks, createDeck } from "@/lib/api/controllers/deckController";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {

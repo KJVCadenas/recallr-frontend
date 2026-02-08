@@ -2,7 +2,7 @@ import {
   getDeck,
   updateDeck,
   deleteDeck,
-} from "@/lib/controllers/deckController";
+} from "@/lib/api/controllers/deckController";
 import { NextRequest } from "next/server";
 
 export async function GET(
