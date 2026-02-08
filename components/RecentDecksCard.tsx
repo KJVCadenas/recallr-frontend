@@ -3,14 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "motion/react";
 import { useDebouncedHover } from "@/hooks/useDebouncedHover";
-
-interface Deck {
-  id: number;
-  name: string;
-  lastReviewed: string;
-  cards: number;
-  description?: string;
-}
+import { Deck } from "@/lib/api/models/types";
 
 interface RecentDecksCardProps {
   deck: Deck;
@@ -18,7 +11,7 @@ interface RecentDecksCardProps {
 
 export default function RecentDecksCard({ deck }: RecentDecksCardProps) {
   const { debouncedHovered, onMouseEnter, onMouseLeave } =
-    useDebouncedHover(100);
+    useDebouncedHover(1000);
 
   return (
     <div className="min-h-36 perspective-[1000px]">
@@ -39,9 +32,11 @@ export default function RecentDecksCard({ deck }: RecentDecksCardProps) {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Last reviewed: {deck.lastReviewed}
+              Last reviewed: {new Date(deck.lastReviewed).toLocaleDateString()}
             </p>
-            <p className="text-sm text-muted-foreground">{deck.cards} cards</p>
+            <p className="text-sm text-muted-foreground">
+              {deck.cardCount} cards
+            </p>
           </CardContent>
         </Card>
 

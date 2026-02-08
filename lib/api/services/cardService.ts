@@ -29,7 +29,7 @@ export class CardService {
       deckId,
       front,
       back,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     };
 
     await this.storage.create("cards.json", card);

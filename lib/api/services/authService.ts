@@ -44,7 +44,7 @@ export class AuthService {
       id: Date.now().toString(),
       email,
       password: hashedPassword,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     };
 
     await this.storage.create("users.json", user);

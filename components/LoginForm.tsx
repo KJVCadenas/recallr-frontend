@@ -7,21 +7,41 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLogin, useRegister } from "@/hooks/useAuth";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
+  const [error, setError] = useState("");
 
   const router = useRouter();
+  const loginMutation = useLogin();
+  const registerMutation = useRegister();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock authentication - just set a flag in localStorage
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userName", email);
-    router.push("/home");
+    setError("");
+    try {
+      if (isLogin) {
+        await loginMutation.mutateAsync({ email, password });
+      } else {
+        await registerMutation.mutateAsync({ email, password });
+      }
+      router.push("/home");
+    } catch (err) {
+      const error = err as { response?: { status?: number }; message?: string };
+      if (error.response?.status === 401) {
+        setError("Invalid email or password. Please try again.");
+      } else if (error.message) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred. Please try again later.");
+      }
+    }
   };
+
+  const isLoading = loginMutation.isPending || registerMutation.isPending;
 
   return (
     <div className="flex items-center justify-center p-4 h-full">
@@ -51,9 +71,18 @@ export function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete={isLogin ? "current-password" : "new-password"}
               />
             </div>
-            <Button type="submit" className="w-full">
+            {error && (
+              <div className="text-red-500 text-sm text-center">{error}</div>
+            )}
+            <Button
+              type="submit"
+              className="w-full"
+              loading={isLoading}
+              loadingText="Loading..."
+            >
               {isLogin ? "Sign In" : "Sign Up"}
             </Button>
           </form>

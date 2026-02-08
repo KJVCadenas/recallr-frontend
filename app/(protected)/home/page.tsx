@@ -1,31 +1,51 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import LogoutButton from "../../../components/LogoutButton";
 import RecentDecksCard from "../../../components/RecentDecksCard";
 import Link from "next/link";
+import { Deck } from "@/lib/api/models/types";
 
-interface Deck {
-  id: number;
-  name: string;
-  lastReviewed: string;
-  cards: number;
-  description?: string;
-}
+async function HomePage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth-token")?.value;
 
-function HomePage() {
-  const [recentDecks, setRecentDecks] = useState<Deck[]>([]);
-  const [user, setUser] = useState("");
+  if (!token) {
+    redirect("/login");
+  }
 
-  useEffect(() => {
-    const decks = JSON.parse(localStorage.getItem("decks") || "[]");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRecentDecks(decks);
-    const userName = localStorage.getItem("userName") || "User";
-    setUser(userName);
-  }, []);
+  // Verify authentication via API
+  const authResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/auth/verify`,
+    {
+      headers: {
+        Cookie: `auth-token=${token}`,
+      },
+    },
+  );
+
+  if (!authResponse.ok) {
+    redirect("/login");
+  }
+
+  const authData = await authResponse.json();
+  const user = authData.user?.email || "User";
+
+  // Fetch decks via API
+  const decksResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/decks`,
+    {
+      headers: {
+        Cookie: `auth-token=${token}`,
+      },
+    },
+  );
+
+  let decks: Deck[] = [];
+  if (decksResponse.ok) {
+    decks = await decksResponse.json();
+  }
 
   return (
     <div className="h-full px-4 py-12">
@@ -41,14 +61,21 @@ function HomePage() {
         </div>
 
         {/* Recently Reviewed Decks */}
-        {recentDecks && recentDecks.length > 0 && (
+        {decks && decks.length > 0 ? (
           <div>
             <h2 className="text-xl font-semibold mb-4">Your Decks</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recentDecks.map((deck) => (
+              {decks.map((deck) => (
                 <RecentDecksCard key={deck.id} deck={deck} />
               ))}
             </div>
+          </div>
+        ) : (
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-4">No decks yet</h2>
+            <p className="text-muted-foreground mb-4">
+              Create your first flashcard deck to get started!
+            </p>
           </div>
         )}
 

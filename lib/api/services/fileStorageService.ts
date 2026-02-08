@@ -20,6 +20,10 @@ export class FileStorageService {
       return JSON.parse(data);
     } catch (error) {
       // File doesn't exist or is empty
+      console.warn(
+        `File ${filename} not found or empty. Returning empty array.`,
+        error,
+      );
       return [];
     }
   }

@@ -23,6 +23,8 @@ export default function LoginPage() {
           src="/Reading-by-Luriko-Yamaguchi.jpg"
           alt="Reading a Book"
           fill
+          sizes="50vw"
+          loading="eager"
           className="object-contain"
         />
       </div>

@@ -26,8 +26,8 @@ export class DeckService {
       description,
       userId,
       cardCount: 0,
-      lastReviewed: new Date(),
-      createdAt: new Date(),
+      lastReviewed: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     };
 
     await this.storage.create("decks.json", deck);

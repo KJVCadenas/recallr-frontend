@@ -2,7 +2,7 @@ export interface User {
   id: string;
   email: string;
   password: string; // hashed
-  createdAt: Date;
+  createdAt: string;
 }
 
 export interface Deck {
@@ -11,8 +11,8 @@ export interface Deck {
   description: string;
   userId: string;
   cardCount: number;
-  lastReviewed: Date;
-  createdAt: Date;
+  lastReviewed: string;
+  createdAt: string;
 }
 
 export interface Card {
@@ -20,7 +20,7 @@ export interface Card {
   deckId: string;
   front: string;
   back: string;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export interface AuthToken {

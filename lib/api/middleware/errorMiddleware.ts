@@ -22,8 +22,10 @@ export function handleApiError(error: unknown): NextResponse {
   return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 }
 
-export function withErrorHandler(handler: Function) {
-  return async (...args: any[]) => {
+export function withErrorHandler(
+  handler: (...args: unknown[]) => Promise<NextResponse>,
+) {
+  return async (...args: unknown[]) => {
     try {
       return await handler(...args);
     } catch (error) {
