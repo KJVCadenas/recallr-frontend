@@ -72,7 +72,7 @@ async function HomePage() {
           </div>
         ) : (
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-4">No decks yet</h2>
+            <h2 className="text-2xl font-semibold">No decks yet</h2>
             <p className="text-muted-foreground mb-4">
               Create your first flashcard deck to get started!
             </p>

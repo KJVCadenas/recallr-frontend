@@ -10,6 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DraftFlashCard } from "@/components/DraftFlashCard";
 import { FloatingNavigationButtons } from "@/components/FloatingNavigationButtons";
 import { Plus } from "lucide-react";
+import { useCreateDeck } from "@/hooks/useDecks";
+import { useCreateCard } from "@/hooks/useCards";
+import { Spinner } from "@/components/ui/spinner";
 
 interface CardData {
   front: string;
@@ -20,7 +23,11 @@ export default function CreateDeckPage() {
   const [deckName, setDeckName] = useState("");
   const [description, setDescription] = useState("");
   const [cards, setCards] = useState<CardData[]>([{ front: "", back: "" }]);
+  const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
+
+  const createDeckMutation = useCreateDeck();
+  const createCardMutation = useCreateCard();
 
   const addCard = () => {
     setCards([...cards, { front: "", back: "" }]);
@@ -38,7 +45,7 @@ export default function CreateDeckPage() {
     setCards(newCards);
   };
 
-  const saveDeck = () => {
+  const saveDeck = async () => {
     if (
       !deckName.trim() ||
       cards.some((card) => !card.front.trim() || !card.back.trim())
@@ -47,21 +54,30 @@ export default function CreateDeckPage() {
       return;
     }
 
-    const existingDecks = JSON.parse(localStorage.getItem("decks") || "[]");
-    const newDeck = {
-      id: Date.now(),
-      name: deckName,
-      description,
-      cards: cards.length,
-      lastReviewed: "Never",
-    };
-    const updatedDecks = [...existingDecks, newDeck];
-    localStorage.setItem("decks", JSON.stringify(updatedDecks));
+    setIsCreating(true);
+    try {
+      // Create deck
+      const deck = await createDeckMutation.mutateAsync({
+        name: deckName,
+        description,
+      });
 
-    // Also store the cards separately, maybe with deck id
-    localStorage.setItem(`deck-${newDeck.id}-cards`, JSON.stringify(cards));
+      // Create cards
+      await Promise.all(
+        cards.map((card) =>
+          createCardMutation.mutateAsync({
+            deckId: deck.id,
+            data: { front: card.front, back: card.back },
+          }),
+        ),
+      );
 
-    router.push("/home");
+      router.push("/home");
+    } catch (error) {
+      alert("Failed to create deck: " + (error as Error).message);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -135,13 +151,19 @@ export default function CreateDeckPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button onClick={saveDeck} className="flex-1">
+            <Button
+              onClick={saveDeck}
+              className="flex-1"
+              loading={isCreating}
+              loadingText="Creating..."
+            >
               Create Deck
             </Button>
             <Button
               onClick={() => router.push("/home")}
               variant="outline"
               className="flex-1 sm:flex-initial"
+              disabled={isCreating}
             >
               Cancel
             </Button>

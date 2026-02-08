@@ -11,7 +11,7 @@ interface RecentDecksCardProps {
 
 export default function RecentDecksCard({ deck }: RecentDecksCardProps) {
   const { debouncedHovered, onMouseEnter, onMouseLeave } =
-    useDebouncedHover(1000);
+    useDebouncedHover(500);
 
   return (
     <div className="min-h-36 perspective-[1000px]">
