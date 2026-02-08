@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,20 +11,12 @@ import { useCards } from "@/hooks/useCards";
 import { FloatingNavigationButtons } from "@/components/FloatingNavigationButtons";
 import { ProgressWithLabel } from "@/components/ProgressBarWithLabel";
 import { Spinner } from "@/components/ui/spinner";
+import { CaseOpeningAnimation } from "@/components/CaseOpeningAnimation";
 
 interface CardData {
   id: string;
   front: string;
   back: string;
-}
-
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
 }
 
 function ReviewCard({
@@ -84,15 +76,25 @@ export default function ReviewPage() {
   const [isShuffled, setIsShuffled] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const displayCards = isShuffled ? shuffledCards : cards;
 
   const shuffleCards = useCallback(() => {
-    setShuffledCards(shuffleArray(cards));
-    setIsShuffled(true);
-    setCurrentIndex(0);
-    setIsFlipped(false);
+    if (cards.length < 2) return;
+    setIsAnimating(true);
   }, [cards]);
+
+  const handleAnimationComplete = useCallback(
+    (selectedIndex: number, newShuffledCards: CardData[]) => {
+      setShuffledCards(newShuffledCards);
+      setIsShuffled(true);
+      setCurrentIndex(selectedIndex);
+      setIsFlipped(false);
+      setIsAnimating(false);
+    },
+    [],
+  );
 
   const nextCard = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % displayCards.length);
@@ -155,6 +157,17 @@ export default function ReviewPage() {
   return (
     <div className="h-full px-4 py-4 flex flex-col">
       <FloatingNavigationButtons />
+
+      {/* CS:GO Case Opening Animation */}
+      <AnimatePresence>
+        {isAnimating && (
+          <CaseOpeningAnimation
+            cards={cards}
+            onComplete={handleAnimationComplete}
+          />
+        )}
+      </AnimatePresence>
+
       <div className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-4xl space-y-8">
           {/* Header */}
@@ -163,7 +176,12 @@ export default function ReviewPage() {
               <Badge variant="secondary" className="text-sm">
                 {currentIndex + 1} of {displayCards.length}
               </Badge>
-              <Button onClick={shuffleCards} variant="outline" size="sm">
+              <Button
+                onClick={shuffleCards}
+                variant="outline"
+                size="sm"
+                disabled={isAnimating || cards.length < 2}
+              >
                 <Shuffle className="w-4 h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Shuffle</span>
               </Button>
