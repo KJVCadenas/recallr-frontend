@@ -156,8 +156,6 @@ export default function ReviewPage() {
 
   return (
     <div className="h-full px-4 py-4 flex flex-col">
-      <FloatingNavigationButtons />
-
       {/* CS:GO Case Opening Animation */}
       <AnimatePresence>
         {isAnimating && (
