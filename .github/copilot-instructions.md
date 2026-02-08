@@ -20,6 +20,7 @@
 
 - **Client Components**: Use `"use client"` directive for interactive components
 - **UI Components**: Import from `@/components/ui/*`, built on @base-ui/react primitives
+- **Button Component**: Does not support `asChild` prop. For links styled as buttons, use `Link` from `next/link` with button variant classes directly
 - **Styling**: Use `cn()` utility from `@/lib/utils` for conditional class merging
 - **Variants**: Define component variants with `class-variance-authority` (cva)
 - **Data Attributes**: Use `data-slot` attributes for component identification (e.g., `data-slot="button"`)
@@ -77,14 +78,28 @@ function Button({ variant, className, ...props }) {
 }
 ```
 
-````tsx
+```tsx
+// Link styled as button (since Button doesn't support asChild)
+import Link from "next/link";
+
+<Link
+  href="/path"
+  className="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-transparent bg-primary text-primary-foreground text-sm font-medium h-9 gap-1.5 px-2.5 transition-all hover:bg-primary/80"
+>
+  Click me
+</Link>;
+```
+
+```tsx
 // Theme-aware component
-import { useTheme } from "next-themes"
+import { useTheme } from "next-themes";
 
 function ThemeToggle() {
-  const { setTheme } = useTheme()
+  const { setTheme } = useTheme();
   // Implementation uses next-themes API
 }
-```</content>
-<parameter name="filePath">d:\Documents\PersonalProjects\recallr-frontend\.github\copilot-instructions.md
-````
+```
+
+```
+
+```
