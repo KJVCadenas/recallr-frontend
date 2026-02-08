@@ -12,7 +12,6 @@ import { FloatingNavigationButtons } from "@/components/FloatingNavigationButton
 import { Plus } from "lucide-react";
 import { useCreateDeck } from "@/hooks/useDecks";
 import { useCreateCard } from "@/hooks/useCards";
-import { Spinner } from "@/components/ui/spinner";
 
 interface CardData {
   front: string;

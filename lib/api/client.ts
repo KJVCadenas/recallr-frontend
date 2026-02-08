@@ -13,10 +13,12 @@ api.interceptors.response.use(
       // Don't redirect for auth endpoints (login/register failures are expected)
       if (!error.config?.url?.includes("/api/auth/")) {
         // Token expired or invalid, clear localStorage and redirect
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("userName");
-        localStorage.removeItem("decks");
-        window.location.href = "/login";
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userName");
+          localStorage.removeItem("decks");
+          window.location.href = "/login";
+        }
       }
     }
     return Promise.reject(error);

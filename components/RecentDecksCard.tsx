@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "motion/react";
 import { useDebouncedHover } from "@/hooks/useDebouncedHover";
 import { Deck } from "@/lib/api/models/types";
+import { useRouter } from "next/navigation";
 
 interface RecentDecksCardProps {
   deck: Deck;
@@ -12,6 +13,11 @@ interface RecentDecksCardProps {
 export default function RecentDecksCard({ deck }: RecentDecksCardProps) {
   const { debouncedHovered, onMouseEnter, onMouseLeave } =
     useDebouncedHover(500);
+  const router = useRouter();
+
+  const handleClick = () => {
+    router.push(`/deck/${deck.id}/review`);
+  };
 
   return (
     <div className="min-h-36 perspective-[1000px]">
@@ -22,6 +28,7 @@ export default function RecentDecksCard({ deck }: RecentDecksCardProps) {
         style={{ transformStyle: "preserve-3d" }}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
+        onClick={handleClick}
       >
         {/* Front of card */}
         <Card className="absolute inset-0 h-full w-full backface-hidden hover:shadow-md transition-shadow">

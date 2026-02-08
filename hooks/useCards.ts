@@ -26,7 +26,7 @@ export function useCards(deckId: string) {
       const response = await api.get<Card[]>(`/api/decks/${deckId}/cards`);
       return response.data;
     },
-    enabled: !!deckId && !!localStorage.getItem("authToken"),
+    enabled: !!deckId,
   });
 }
 
@@ -37,7 +37,7 @@ export function useCard(id: string) {
       const response = await api.get<Card>(`/api/cards/${id}`);
       return response.data;
     },
-    enabled: !!id && !!localStorage.getItem("authToken"),
+    enabled: !!id,
   });
 }
 
