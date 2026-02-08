@@ -168,12 +168,18 @@ export default function ReviewPage() {
 
       <div className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-4xl space-y-8">
+          {/* Progress Bar */}
+          <div className="w-full max-w-md sm:max-w-lg md:max-w-xl mx-auto">
+            <ProgressWithLabel
+              label={`Card ${currentIndex + 1} of ${displayCards.length}`}
+              value={((currentIndex + 1) / displayCards.length) * 100}
+              max={100}
+              className="w-full"
+            />
+          </div>
           {/* Header */}
           <div className="text-center">
             <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
-              <Badge variant="secondary" className="text-sm">
-                {currentIndex + 1} of {displayCards.length}
-              </Badge>
               <Button
                 onClick={shuffleCards}
                 variant="outline"
@@ -218,16 +224,6 @@ export default function ReviewPage() {
               <span className="hidden sm:inline">Next</span>
               <ArrowRight className="w-4 h-4 ml-1 sm:ml-2" />
             </Button>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="w-full max-w-md sm:max-w-lg md:max-w-xl mx-auto px-4">
-            <ProgressWithLabel
-              label={`Card ${currentIndex + 1} of ${displayCards.length}`}
-              value={((currentIndex + 1) / displayCards.length) * 100}
-              max={100}
-              className="w-full"
-            />
           </div>
         </div>
       </div>
