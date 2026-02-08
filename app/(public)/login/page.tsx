@@ -1,5 +1,4 @@
 import Image from "next/image";
-import loginImage from "@/assets/Reading-by-Luriko-Yamaguchi.jpg";
 import { LoginForm } from "@/components/LoginForm";
 import { Metadata } from "next";
 
@@ -21,7 +20,7 @@ export default function LoginPage() {
       <LoginForm />
       <div className="relative h-full">
         <Image
-          src={loginImage}
+          src="/Reading-by-Luriko-Yamaguchi.jpg"
           alt="Reading a Book"
           fill
           className="object-contain"
