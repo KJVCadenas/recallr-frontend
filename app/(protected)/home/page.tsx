@@ -15,9 +15,14 @@ async function HomePage() {
     redirect("/login");
   }
 
+  const rawBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = rawBaseUrl.startsWith("http")
+    ? rawBaseUrl
+    : `https://${rawBaseUrl}`;
+
   // Verify authentication via API
   const authResponse = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/auth/verify`,
+    `${baseUrl}/api/auth/verify`,
     {
       headers: {
         Cookie: `auth-token=${token}`,
@@ -34,7 +39,7 @@ async function HomePage() {
 
   // Fetch decks via API
   const decksResponse = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/decks`,
+    `${baseUrl}/api/decks`,
     {
       headers: {
         Cookie: `auth-token=${token}`,
