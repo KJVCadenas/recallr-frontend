@@ -2,7 +2,9 @@ import { promises as fs } from "fs";
 import path from "path";
 
 export class FileStorageService {
-  private dataDir = path.join(process.cwd(), "data");
+  private dataDir = process.env.VERCEL
+    ? path.join("/tmp", "data")
+    : path.join(process.cwd(), "data");
 
   async ensureDataDir() {
     try {
