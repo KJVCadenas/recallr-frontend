@@ -11,6 +11,9 @@ importers:
       '@base-ui/react':
         specifier: ^1.1.0
         version: 1.1.0(@types/react@19.2.13)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@google-recaptcha/react':
+        specifier: ^2.4.0
+        version: 2.4.0(@types/react@19.2.13)(react@19.2.3)
       '@tanstack/react-query':
         specifier: ^5.90.20
         version: 5.90.20(react@19.2.3)
@@ -332,6 +335,18 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@google-recaptcha/core@1.1.2':
+    resolution: {integrity: sha512-WHIVXntnc7b0FXkgNOO1Y7kYj+wnWVNkwluHz4ISmGfnGeUw5U/OezBPmZBOD9J+LK+hA11zvFGs0vElnc7UMw==}
+
+  '@google-recaptcha/react@2.4.0':
+    resolution: {integrity: sha512-JkjYifh4znkD30h8fMbU/Nlg8IgOjYoenq3DZ6JJy7WrTJ/lGCF/3S5S+nlommwOTEQ8C26hRE88tXJSbF450w==}
+    peerDependencies:
+      '@types/react': ^17 || ^18|| ^19
+      react: ^17 || ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@hono/node-server@1.19.9':
     resolution: {integrity: sha512-vHL6w3ecZsky+8P5MD+eFfaGTyCeOHUIFYMGpQGbrBTSmNNoxv0if69rEZ5giu36weC5saFuznL411gRX7bJDw==}
@@ -3537,6 +3552,15 @@ snapshots:
       react-dom: 19.2.3(react@19.2.3)
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@google-recaptcha/core@1.1.2': {}
+
+  '@google-recaptcha/react@2.4.0(@types/react@19.2.13)(react@19.2.3)':
+    dependencies:
+      '@google-recaptcha/core': 1.1.2
+      react: 19.2.3
+    optionalDependencies:
+      '@types/react': 19.2.13
 
   '@hono/node-server@1.19.9(hono@4.11.8)':
     dependencies:

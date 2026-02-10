@@ -4,6 +4,7 @@ import api from "@/lib/api/client";
 interface LoginData {
   email: string;
   password: string;
+  recaptchaToken?: string;
 }
 
 interface AuthResponse {

@@ -8,6 +8,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLogin, useRegister } from "@/hooks/useAuth";
+import { useGoogleReCaptcha } from '@google-recaptcha/react';
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -18,15 +19,30 @@ export function LoginForm() {
   const router = useRouter();
   const loginMutation = useLogin();
   const registerMutation = useRegister();
+  const googleReCaptcha = useGoogleReCaptcha();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!googleReCaptcha) {
+      setError("reCAPTCHA not loaded. Please refresh and try again.");
+      return;
+    }
+
+    const recaptcha = googleReCaptcha;
+    // @ts-expect-error: executeV3 is available but not typed in the library
+    const token = await recaptcha.executeV3(isLogin ? 'login' : 'register');
+    if (!token) {
+      setError("reCAPTCHA verification failed. Please try again.");
+      return;
+    }
+
     try {
       if (isLogin) {
-        await loginMutation.mutateAsync({ email, password });
+        await loginMutation.mutateAsync({ email, password, recaptchaToken: token });
       } else {
-        await registerMutation.mutateAsync({ email, password });
+        await registerMutation.mutateAsync({ email, password, recaptchaToken: token });
       }
       router.push("/home");
     } catch (err) {
