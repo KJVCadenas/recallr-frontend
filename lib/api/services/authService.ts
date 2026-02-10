@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User, AuthToken } from "../models/types";
+import { ProfileUpdateInput } from "../models/schemas";
 import { FileStorageService } from "./fileStorageService";
 import { randomUUID } from "crypto";
 
@@ -34,16 +35,24 @@ export class AuthService {
     }
   }
 
-  async createUser(email: string, password: string): Promise<User> {
+  async createUser(email: string, password: string, username?: string): Promise<User> {
     const existingUser = await this.findUserByEmail(email);
     if (existingUser) {
       throw new Error("User already exists");
+    }
+
+    if (username) {
+      const existingUsername = await this.findUserByUsername(username);
+      if (existingUsername) {
+        throw new Error("Username already taken");
+      }
     }
 
     const hashedPassword = await this.hashPassword(password);
     const user: User = {
       id: randomUUID(),
       email,
+      username,
       password: hashedPassword,
       createdAt: new Date().toISOString(),
     };
@@ -70,5 +79,46 @@ export class AuthService {
 
   async findUserById(id: string): Promise<User | null> {
     return this.storage.findById<User>("users.json", id);
+  }
+
+  async findUserByUsername(username: string): Promise<User | null> {
+    const users = await this.storage.readJsonFile<User>("users.json");
+    return users.find((user) => user.username === username) || null;
+  }
+
+  async updateUserProfile(userId: string, updates: ProfileUpdateInput): Promise<User> {
+    const user = await this.findUserById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // If updating password, verify current password
+    if (updates.newPassword) {
+      if (!updates.currentPassword) {
+        throw new Error("Current password is required to change password");
+      }
+      const isCurrentValid = await this.verifyPassword(updates.currentPassword, user.password);
+      if (!isCurrentValid) {
+        throw new Error("Current password is incorrect");
+      }
+    }
+
+    // Check username uniqueness if updating
+    if (updates.username && updates.username !== user.username) {
+      const existingUsername = await this.findUserByUsername(updates.username);
+      if (existingUsername) {
+        throw new Error("Username already taken");
+      }
+    }
+
+    // Update user
+    const updatedUser: User = {
+      ...user,
+      username: updates.username !== undefined ? updates.username : user.username,
+      password: updates.newPassword ? await this.hashPassword(updates.newPassword) : user.password,
+    };
+
+    await this.storage.update("users.json", userId, updatedUser);
+    return updatedUser;
   }
 }

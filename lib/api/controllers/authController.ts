@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AuthService } from "../services/authService";
-import { loginSchema } from "../models/schemas";
+import { loginSchema, profileUpdateSchema } from "../models/schemas";
 import { handleApiError } from "../middleware/errorMiddleware";
+import { requireAuth } from "../middleware/authMiddleware";
 
 const authService = new AuthService();
 
@@ -106,6 +107,55 @@ export async function register(request: NextRequest) {
     });
 
     return response;
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+export async function getProfile(request: NextRequest) {
+  try {
+    const authToken = await requireAuth(request);
+    if (!authToken) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await authService.findUserById(authToken.userId);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+    });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+export async function updateProfile(request: NextRequest) {
+  try {
+    const authToken = await requireAuth(request);
+    if (!authToken) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await authService.findUserById(authToken.userId);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const body = await request.json();
+    const updates = profileUpdateSchema.parse(body);
+
+    const updatedUser = await authService.updateUserProfile(user.id, updates);
+
+    return NextResponse.json({
+      id: updatedUser.id,
+      email: updatedUser.email,
+      username: updatedUser.username,
+    });
   } catch (error) {
     return handleApiError(error);
   }
