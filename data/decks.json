@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1770623734036",
+    "name": "JavaScript Essentials",
+    "description": "Core JS concepts, pitfalls, and best practices.",
+    "userId": "1770623673980",
+    "cardCount": 8,
+    "lastReviewed": "2026-02-09T07:55:34.036Z",
+    "createdAt": "2026-02-09T07:20:00.000Z"
+  },
+  {
+    "id": "1770623734037",
+    "name": "React Patterns",
+    "description": "Hooks, composition, and state management patterns.",
+    "userId": "1770623673980",
+    "cardCount": 6,
+    "lastReviewed": "2026-02-08T18:15:12.000Z",
+    "createdAt": "2026-02-08T16:02:00.000Z"
+  },
+  {
+    "id": "1770623734038",
+    "name": "Data Structures",
+    "description": "Complexity, trade-offs, and common DS usage.",
+    "userId": "1770623673980",
+    "cardCount": 7,
+    "lastReviewed": "2026-02-07T09:40:10.000Z",
+    "createdAt": "2026-02-07T08:10:00.000Z"
+  },
+  {
+    "id": "1770623734039",
+    "name": "System Design Basics",
+    "description": "Scalability, caching, and high-level architecture.",
+    "userId": "1770623673980",
+    "cardCount": 5,
+    "lastReviewed": "2026-02-06T21:05:54.000Z",
+    "createdAt": "2026-02-06T19:30:00.000Z"
+  }
+]

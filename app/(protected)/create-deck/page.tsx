@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { DraftFlashCard } from "@/components/DraftFlashCard";
 import { FloatingNavigationButtons } from "@/components/FloatingNavigationButtons";
 import { DeckFileUpload } from "@/components/DeckFileUpload";
 import { Plus } from "lucide-react";
-import { useCreateDeck } from "@/hooks/useDecks";
+import { ImportDeckResult, useCreateDeck } from "@/hooks/useDecks";
 import { useCreateCard } from "@/hooks/useCards";
 
 interface CardData {
@@ -44,6 +44,18 @@ export default function CreateDeckPage() {
     newCards[index][field] = value;
     setCards(newCards);
   };
+
+  const handleImportResult = useCallback((result: ImportDeckResult) => {
+    if (!deckName.trim() && result.deck.name) {
+      setDeckName(result.deck.name);
+    }
+    if (!description.trim() && result.deck.description) {
+      setDescription(result.deck.description);
+    }
+    if (result.cards.length > 0) {
+      setCards(result.cards);
+    }
+  }, []);
 
   const saveDeck = async () => {
     if (
@@ -122,7 +134,7 @@ export default function CreateDeckPage() {
             <DeckFileUpload
               deckName={deckName}
               description={description}
-              onImported={() => router.push("/home")}
+              onImported={handleImportResult}
             />
           </div>
 

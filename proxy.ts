@@ -46,12 +46,19 @@ export function proxy(request: NextRequest) {
     "unknown";
 
   const pathname = request.nextUrl.pathname;
+  const method = request.method;
 
   let maxRequests = 100; // Default
   let windowMs = 15 * 60 * 1000; // 15 minutes
 
   if (pathname.startsWith("/api/auth/login")) {
     maxRequests = 5; // Stricter for login
+    windowMs = 15 * 60 * 1000;
+  } else if (
+    pathname.startsWith("/api/decks/import-text/") &&
+    method === "GET"
+  ) {
+    maxRequests = 500; // Allow frequent polling for import jobs
     windowMs = 15 * 60 * 1000;
   } else if (
     pathname.startsWith("/api/decks") ||

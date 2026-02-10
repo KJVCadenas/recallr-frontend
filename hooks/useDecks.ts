@@ -11,6 +11,37 @@ export interface Deck {
   createdAt: string;
 }
 
+export interface ImportedCard {
+  front: string;
+  back: string;
+}
+
+export interface ImportDeckResult {
+  deck: {
+    name: string;
+    description: string;
+  };
+  cards: ImportedCard[];
+  warnings: string[];
+}
+
+export type ImportDeckJobStatus =
+  | "queued"
+  | "processing"
+  | "completed"
+  | "failed";
+
+export interface ImportDeckJobResponse {
+  jobId: string;
+  status: ImportDeckJobStatus;
+}
+
+export interface ImportDeckJobStatusResponse {
+  status: ImportDeckJobStatus;
+  result?: ImportDeckResult;
+  error?: string;
+}
+
 interface CreateDeckData {
   name: string;
   description: string;
@@ -21,8 +52,8 @@ interface UpdateDeckData {
   description?: string;
 }
 
-interface ImportDeckFileData {
-  file: File;
+interface ImportDeckTextData {
+  text: string;
   name?: string;
   description?: string;
 }
@@ -90,21 +121,15 @@ export function useDeleteDeck() {
   });
 }
 
-export function useImportDeckFile() {
+export function useImportDeckText() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: ImportDeckFileData) => {
-      const formData = new FormData();
-      formData.append("file", data.file);
-      if (data.name) {
-        formData.append("name", data.name);
-      }
-      if (data.description) {
-        formData.append("description", data.description);
-      }
-
-      const response = await api.post("/api/decks/import", formData);
+    mutationFn: async (data: ImportDeckTextData) => {
+      const response = await api.post<ImportDeckJobResponse>(
+        "/api/decks/import-text",
+        data,
+      );
       return response.data;
     },
     onSuccess: () => {
