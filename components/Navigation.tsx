@@ -21,11 +21,6 @@ export function Navigation() {
             My Profile
           </Button>
         </Link>
-        <Link href="/settings">
-          <Button variant="ghost" className="text-primary">
-            Settings
-          </Button>
-        </Link>
       </nav>
     </header>
   );
