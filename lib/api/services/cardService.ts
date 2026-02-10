@@ -1,6 +1,7 @@
 import { Card } from "../models/types";
 import { FileStorageService } from "./fileStorageService";
 import { DeckService } from "./deckService";
+import { randomUUID } from "crypto";
 
 export class CardService {
   private storage = new FileStorageService();
@@ -25,7 +26,7 @@ export class CardService {
     }
 
     const card: Card = {
-      id: Date.now().toString(),
+      id: randomUUID(),
       deckId,
       front,
       back,

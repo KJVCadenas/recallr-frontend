@@ -11,7 +11,7 @@ import { DraftFlashCard } from "@/components/DraftFlashCard";
 import { FloatingNavigationButtons } from "@/components/FloatingNavigationButtons";
 import { DeckFileUpload } from "@/components/DeckFileUpload";
 import { Plus } from "lucide-react";
-import { ImportDeckResult, useCreateDeck } from "@/hooks/useDecks";
+import { ImportDeckResult, useCreateDeck, useDeleteDeck } from "@/hooks/useDecks";
 import { useCreateCard } from "@/hooks/useCards";
 import { validateAndSanitizeDeck, validateAndSanitizeCards, sanitizeText } from "@/lib/frontend/validation";
 
@@ -29,6 +29,7 @@ export default function CreateDeckPage() {
 
   const createDeckMutation = useCreateDeck();
   const createCardMutation = useCreateCard();
+  const deleteDeckMutation = useDeleteDeck();
 
   const addCard = () => {
     setCards([...cards, { front: "", back: "" }]);
@@ -82,17 +83,30 @@ export default function CreateDeckPage() {
       // Create deck
       const deck = await createDeckMutation.mutateAsync(deckValidation.data);
 
-      // Create cards
-      await Promise.all(
-        cardsValidation.data.map((card) =>
-          createCardMutation.mutateAsync({
-            deckId: deck.id,
-            data: card,
-          }),
-        ),
-      );
+      try {
+        // Create all cards - all or nothing
+        await Promise.all(
+          cardsValidation.data.map((card) =>
+            createCardMutation.mutateAsync({
+              deckId: deck.id,
+              data: card,
+            }),
+          ),
+        );
 
-      router.push("/home");
+        // All cards created successfully
+        router.push("/home");
+      } catch (cardError) {
+        // If card creation fails, delete the deck to maintain consistency
+        console.error("Failed to create cards:", cardError);
+        try {
+          await deleteDeckMutation.mutateAsync(deck.id);
+          alert("Failed to create some cards. The deck has been removed to maintain data consistency. Please try again.");
+        } catch (deleteError) {
+          console.error("Failed to cleanup deck after card creation failure:", deleteError);
+          alert("Critical error: Deck was created but cards failed. The deck could not be cleaned up automatically. Please contact support.");
+        }
+      }
     } catch (error) {
       alert("Failed to create deck: " + (error as Error).message);
     } finally {

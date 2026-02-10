@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User, AuthToken } from "../models/types";
 import { FileStorageService } from "./fileStorageService";
+import { randomUUID } from "crypto";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -41,7 +42,7 @@ export class AuthService {
 
     const hashedPassword = await this.hashPassword(password);
     const user: User = {
-      id: Date.now().toString(),
+      id: randomUUID(),
       email,
       password: hashedPassword,
       createdAt: new Date().toISOString(),
