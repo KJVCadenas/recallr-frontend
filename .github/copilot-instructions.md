@@ -4,10 +4,11 @@
 
 **Recallr** is a flashcard learning platform built with Next.js. The app allows users to create and review flashcard decks for spaced repetition learning.
 
-- **Authentication**: JWT-based API backend with cookie-based auth; frontend partially migrated from localStorage mock
+- **Authentication**: JWT-based API backend with cookie-based auth
 - **Route Structure**: Public routes in `(public)/` (login), protected routes in `(protected)/` with Navigation wrapper
-- **Data Storage**: Mixed - home page fetches decks/cards from API (file-based JSON), create-deck saves to localStorage; backend uses file-based JSON storage in `data/` directory
-- **Status**: MVP with partial backend integration; home page uses API, create-deck uses localStorage
+- **Data Storage**: File-based JSON storage in `data/` directory (users.json, decks.json, cards.json)
+- **Flashcard Generation**: LLM-powered generation from text/PDF uploads using OpenRouter API
+- **Status**: MVP with backend integration; API for decks/cards CRUD operations
 
 ## Architecture Overview
 
@@ -22,7 +23,7 @@
 
 - **API Routes**: Located in `app/api/` with RESTful endpoints for auth, decks, and cards
 - **Controllers**: Business logic in `lib/api/controllers/` (authController, deckController, cardController)
-- **Services**: Data access and business logic in `lib/api/services/` (authService, deckService, cardService, fileStorageService)
+- **Services**: Data access and business logic in `lib/api/services/` (authService, deckService, cardService, fileStorageService, flashcardGenerator/)
 - **Models**: TypeScript types and Zod schemas in `lib/api/models/`
 - **Middleware**: Authentication and error handling in `lib/api/middleware/`
 - **Storage**: File-based JSON storage using `FileStorageService` in `data/` directory
@@ -39,7 +40,7 @@ app/
     layout.tsx - Wraps children with Navigation, sets main height (calc(100vh-72px))
     home/ - Server component: fetches decks from API via cookies, displays RecentDecksCard grid
     my-decks/ - (Empty - template for deck listing)
-    create-deck/ - Client component: form to create deck, saves to localStorage
+    create-deck/ - Client component: form to create deck and cards via API mutations
   api/
     auth/
       login/route.ts - POST login endpoint
@@ -51,6 +52,7 @@ app/
         route.ts - GET/PUT/DELETE deck by id
         cards/route.ts - GET cards for deck
     cards/[id]/route.ts - GET/PUT/DELETE card by id
+    decks/import-text/ - POST text import, [jobId]/ GET status
 components/ - Reusable components
   /ui - shadcn Components using @base-ui/react (base-vega style)
     button.tsx - Variants: default, outline, ghost, destructive, link, secondary; sizes: xs, sm, default, lg, icon
@@ -64,6 +66,7 @@ components/ - Reusable components
   Navigation.tsx - Static header with nav links (Home, My Decks, Profile, Settings)
   FloatingNavigationButtons.tsx - (Used in create-deck page)
   LogoutButton.tsx - Clears auth cookies and localStorage
+  DeckFileUpload.tsx - PDF/text upload, parsing, LLM generation
 lib/
   api/
     controllers/ - API route handlers (authController, deckController, cardController)
@@ -73,6 +76,9 @@ lib/
   frontend/
     utils.ts - cn() utility: clsx + tailwind-merge for class composition
 hooks/
+  useAuth.ts - (Legacy)
+  useCards.ts - Mutations for card CRUD
+  useDecks.ts - Queries/mutations for decks, import
   useDebounce.ts - Simple debounce hook
   useDebouncedHover.ts - Returns { debouncedHovered, onMouseEnter, onMouseLeave }
 data/ - File-based JSON storage for backend (users.json, decks.json, cards.json)
@@ -101,17 +107,22 @@ Path aliases: `@/*` maps to project root (tsconfig.json)
 - Logout: `LogoutButton` → clears `auth-token` cookie and localStorage → redirects to `/login`
 - Protected routes: Server-side auth check in home page using `cookies()` and `/api/auth/verify`; layout has no guard
 
-**Deck Storage (Mixed: API for reading, localStorage for creating)**
+**Deck Storage (API-based CRUD)**
 
 - Read: `home/page.tsx` (server) → fetch `/api/decks` with cookie → returns decks from `data/decks.json`
-- Create: `create-deck/page.tsx` (client) → `saveDeck()` → `localStorage.setItem("decks", ...)` and `localStorage.setItem(\`deck-${id}-cards\`, ...)`
-- Structure: API decks: `{ id, name, description, userId, cardCount, lastReviewed, createdAt }`; localStorage: `{ id, name, description, cards (count), lastReviewed }`
+- Create: `create-deck/page.tsx` (client) → `useCreateDeck` mutation → POST `/api/decks` → stores in `data/decks.json`
+- Update/Delete: Similar API calls
 
-**Card Storage (localStorage keyed by deckId)**
+**Card Storage (API-based CRUD)**
 
-- Create: `localStorage.setItem(\`deck-${newDeck.id}-cards\`, JSON.stringify(cards))`
-- Cards format: `{ front: string, back: string }[]`
-- Retrieve: `localStorage.getItem(\`deck-${deckId}-cards\`)` (used in review/edit flows)
+- Create: `useCreateCard` mutation → POST `/api/cards` → stores in `data/cards.json`
+- Cards format: `{ front: string, back: string }`
+
+**Flashcard Generation (LLM-powered Import)**
+
+- Upload: `DeckFileUpload` → parse PDF/text → POST `/api/decks/import-text` → queues job
+- Processing: `FlashcardGenerator` → LLM inference via OpenRouter → generates cards
+- Status: Poll `/api/decks/import-text/{jobId}` → on complete, import result with cards
 
 **Backend API Patterns**
 
@@ -148,18 +159,12 @@ Path aliases: `@/*` maps to project root (tsconfig.json)
 - Return objects expose handlers (`onMouseEnter`, `onMouseLeave`) and state (`debouncedHovered`)
 - Hooks live in `@/hooks/*` and are imported by client components
 
-**localStorage Hydration Pattern**
+**LLM Integration for Flashcard Generation**
 
-- Read localStorage only in `useEffect(() => { ... }, [])` to avoid hydration mismatches
-- Server-side pages should not access localStorage directly; wrap in client-side `useEffect`
-- Example: `const [recentDecks, setRecentDecks] = useState<Deck[]>([]); useEffect(() => { setRecentDecks(JSON.parse(localStorage.getItem("decks") || "[]")); }, [])`
-
-**localStorage Keys**
-
-- `isAuthenticated`: Boolean string ("true" / "false") - legacy
-- `userName`: Email/username string - legacy
-- `decks`: JSON array of deck metadata - used by create-deck
-- `deck-${deckId}-cards`: JSON array of { front, back } card objects for that deck
+- `FlashcardGenerator` class uses OpenRouter API for inference
+- Processes text input to generate front/back card pairs
+- Includes output formatting and warning handling
+- Asynchronous job-based processing for long-running tasks
 
 ## Theming System
 
@@ -177,9 +182,8 @@ Path aliases: `@/*` maps to project root (tsconfig.json)
 
 **Common Issues**:
 
-- Mixed storage: Home reads from API, create-deck writes to localStorage - leads to data inconsistency
 - Auth guards: Protected routes have page-level checks but no layout-level middleware
-- Storage sync: localStorage data not synced with backend; migrate create-deck to use API
+- Storage sync: API-based now, but ensure consistency
 - Theme flickering: Resolved with `suppressHydrationWarning` in root `<html>` element
 
 ## Key Dependencies
@@ -193,6 +197,7 @@ Path aliases: `@/*` maps to project root (tsconfig.json)
 - `bcryptjs`: Password hashing for backend auth
 - `jsonwebtoken`: JWT token handling
 - `zod`: Schema validation for API requests
+- `pdfjs-dist`: PDF parsing for file uploads
 
 ## Code Style Conventions
 
@@ -294,6 +299,15 @@ function AnimatedCard() {
 ```
 
 ```tsx
+// Flashcard generation usage
+import { useImportDeckText } from "@/hooks/useDecks";
+
+const importMutation = useImportDeckText();
+await importMutation.mutateAsync({ text, name, description });
+// Poll for status...
+```
+
+```tsx
 // Theme-aware component
 import { useTheme } from "next-themes";
 
@@ -301,20 +315,4 @@ function ThemeToggle() {
   const { setTheme } = useTheme();
   // Implementation uses next-themes API
 }
-```
-
-```tsx
-// localStorage deck creation (temporary pattern)
-const saveDeck = () => {
-  const existingDecks = JSON.parse(localStorage.getItem("decks") || "[]");
-  const newDeck = {
-    id: Date.now(),
-    name,
-    description,
-    cards: cards.length,
-    lastReviewed: "Never",
-  };
-  localStorage.setItem("decks", JSON.stringify([...existingDecks, newDeck]));
-  localStorage.setItem(`deck-${newDeck.id}-cards`, JSON.stringify(cards));
-};
 ```
