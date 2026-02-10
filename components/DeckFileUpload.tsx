@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
@@ -287,32 +288,42 @@ export function DeckFileUpload({
         </div>
       ) : null}
 
-      <div className="flex items-center gap-3">
-        <Button
-          type="button"
-          onClick={handleUpload}
-          loading={importTextMutation.isPending}
-          loadingText="Uploading..."
-          disabled={importTextMutation.isPending || isProcessing}
-        >
-          Upload File
-        </Button>
-        {file ? (
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <Button
             type="button"
-            variant="ghost"
-            onClick={() => {
-              setFile(null);
-              setWarnings([]);
-              setStatus(null);
-              setJobId(null);
-              setError(null);
-            }}
+            onClick={handleUpload}
+            loading={importTextMutation.isPending}
+            loadingText="Uploading..."
             disabled={importTextMutation.isPending || isProcessing}
           >
-            Clear
+            Upload File
           </Button>
-        ) : null}
+          {file ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setFile(null);
+                setWarnings([]);
+                setStatus(null);
+                setJobId(null);
+                setError(null);
+              }}
+              disabled={importTextMutation.isPending || isProcessing}
+            >
+              Clear
+            </Button>
+          ) : null}
+        </div>
+        <Link
+          href="/TypeScript_Handbook.pdf"
+          download
+        >
+          <Button type="button" variant="link">
+            Download Sample
+          </Button>
+        </Link>
       </div>
     </div>
   );
