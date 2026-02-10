@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DraftFlashCard } from "@/components/DraftFlashCard";
 import { FloatingNavigationButtons } from "@/components/FloatingNavigationButtons";
+import { DeckFileUpload } from "@/components/DeckFileUpload";
 import { Plus } from "lucide-react";
 import { useCreateDeck } from "@/hooks/useDecks";
 import { useCreateCard } from "@/hooks/useCards";
@@ -115,6 +116,14 @@ export default function CreateDeckPage() {
                 rows={3}
               />
             </div>
+          </div>
+
+          <div className="border-t border-border pt-6">
+            <DeckFileUpload
+              deckName={deckName}
+              description={description}
+              onImported={() => router.push("/home")}
+            />
           </div>
 
           <div>

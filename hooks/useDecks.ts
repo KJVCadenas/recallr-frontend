@@ -21,6 +21,12 @@ interface UpdateDeckData {
   description?: string;
 }
 
+interface ImportDeckFileData {
+  file: File;
+  name?: string;
+  description?: string;
+}
+
 export function useDecks() {
   return useQuery({
     queryKey: ["decks"],
@@ -77,6 +83,29 @@ export function useDeleteDeck() {
     mutationFn: async (id: string) => {
       await api.delete(`/api/decks/${id}`);
       return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["decks"] });
+    },
+  });
+}
+
+export function useImportDeckFile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: ImportDeckFileData) => {
+      const formData = new FormData();
+      formData.append("file", data.file);
+      if (data.name) {
+        formData.append("name", data.name);
+      }
+      if (data.description) {
+        formData.append("description", data.description);
+      }
+
+      const response = await api.post("/api/decks/import", formData);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["decks"] });
