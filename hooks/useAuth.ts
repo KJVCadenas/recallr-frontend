@@ -23,7 +23,7 @@ export function useLogin() {
       const response = await api.post<AuthResponse>("/api/auth/login", data);
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Auth token is now in HTTP-only cookie, no localStorage needed
       queryClient.invalidateQueries();
     },
@@ -41,7 +41,7 @@ export function useRegister() {
       const response = await api.post<AuthResponse>("/api/auth/register", data);
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Auth token is now in HTTP-only cookie, no localStorage needed
       queryClient.invalidateQueries();
     },

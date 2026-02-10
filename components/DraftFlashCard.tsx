@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trash2 } from "lucide-react";
+import { sanitizeText } from "@/lib/frontend/validation";
 
 interface CardData {
   front: string;
@@ -47,7 +48,7 @@ export function DraftFlashCard({
             <Textarea
               id={`front-${index}`}
               value={card.front}
-              onChange={(e) => onUpdate(index, "front", e.target.value)}
+              onChange={(e) => onUpdate(index, "front", sanitizeText(e.target.value))}
               placeholder="Question or term"
               rows={3}
               className="resize-none"
@@ -64,7 +65,7 @@ export function DraftFlashCard({
             <Textarea
               id={`back-${index}`}
               value={card.back}
-              onChange={(e) => onUpdate(index, "back", e.target.value)}
+              onChange={(e) => onUpdate(index, "back", sanitizeText(e.target.value))}
               placeholder="Answer or definition"
               rows={3}
               className="resize-none"

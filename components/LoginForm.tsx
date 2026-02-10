@@ -9,6 +9,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLogin, useRegister } from "@/hooks/useAuth";
 import { useGoogleReCaptcha } from '@google-recaptcha/react';
+import { validateAndSanitizeLogin } from "@/lib/frontend/validation";
+import { sanitizeEmail } from "@/lib/frontend/validation";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -38,11 +40,23 @@ export function LoginForm() {
       return;
     }
 
+    // Validate and sanitize input
+    const validation = validateAndSanitizeLogin({
+      email,
+      password,
+      recaptchaToken: token,
+    });
+
+    if (!validation.success) {
+      setError(validation.errors.join(", "));
+      return;
+    }
+
     try {
       if (isLogin) {
-        await loginMutation.mutateAsync({ email, password, recaptchaToken: token });
+        await loginMutation.mutateAsync(validation.data);
       } else {
-        await registerMutation.mutateAsync({ email, password, recaptchaToken: token });
+        await registerMutation.mutateAsync(validation.data);
       }
       router.push("/home");
     } catch (err) {
@@ -75,7 +89,7 @@ export function LoginForm() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(sanitizeEmail(e.target.value))}
                 required
               />
             </div>

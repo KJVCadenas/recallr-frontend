@@ -12,6 +12,7 @@ import {
   ImportDeckResult,
   useImportDeckText,
 } from "@/hooks/useDecks";
+import { sanitizeText } from "@/lib/frontend/validation";
 import { cn } from "@/lib/frontend/utils";
 
 interface DeckFileUploadProps {
@@ -118,8 +119,8 @@ export function DeckFileUpload({
 
       const response = await importTextMutation.mutateAsync({
         text,
-        name: deckName?.trim() || undefined,
-        description: description?.trim() || undefined,
+        name: deckName ? sanitizeText(deckName) : undefined,
+        description: description ? sanitizeText(description) : undefined,
       });
       setJobId(response.jobId);
       setStatus(response.status);

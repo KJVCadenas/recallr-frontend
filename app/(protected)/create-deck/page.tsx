@@ -13,6 +13,7 @@ import { DeckFileUpload } from "@/components/DeckFileUpload";
 import { Plus } from "lucide-react";
 import { ImportDeckResult, useCreateDeck } from "@/hooks/useDecks";
 import { useCreateCard } from "@/hooks/useCards";
+import { validateAndSanitizeDeck, validateAndSanitizeCards, sanitizeText } from "@/lib/frontend/validation";
 
 interface CardData {
   front: string;
@@ -58,28 +59,35 @@ export default function CreateDeckPage() {
   }, []);
 
   const saveDeck = async () => {
-    if (
-      !deckName.trim() ||
-      cards.some((card) => !card.front.trim() || !card.back.trim())
-    ) {
-      alert("Please fill in all fields");
+    // Validate and sanitize deck data
+    const deckValidation = validateAndSanitizeDeck({
+      name: deckName,
+      description,
+    });
+
+    if (!deckValidation.success) {
+      alert("Deck validation failed: " + deckValidation.errors.join(", "));
+      return;
+    }
+
+    // Validate and sanitize cards
+    const cardsValidation = validateAndSanitizeCards(cards);
+    if (!cardsValidation.success) {
+      alert("Card validation failed:\n" + cardsValidation.errors.join("\n"));
       return;
     }
 
     setIsCreating(true);
     try {
       // Create deck
-      const deck = await createDeckMutation.mutateAsync({
-        name: deckName,
-        description,
-      });
+      const deck = await createDeckMutation.mutateAsync(deckValidation.data);
 
       // Create cards
       await Promise.all(
-        cards.map((card) =>
+        cardsValidation.data.map((card) =>
           createCardMutation.mutateAsync({
             deckId: deck.id,
-            data: { front: card.front, back: card.back },
+            data: card,
           }),
         ),
       );
@@ -110,7 +118,7 @@ export default function CreateDeckPage() {
               <Input
                 id="deckName"
                 value={deckName}
-                onChange={(e) => setDeckName(e.target.value)}
+                onChange={(e) => setDeckName(sanitizeText(e.target.value))}
                 placeholder="Enter deck name"
                 required
               />
@@ -123,7 +131,7 @@ export default function CreateDeckPage() {
               <Textarea
                 id="description"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => setDescription(sanitizeText(e.target.value))}
                 placeholder="Enter deck description"
                 rows={3}
               />
