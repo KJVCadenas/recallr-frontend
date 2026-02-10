@@ -7,7 +7,7 @@ import RecentDecksCard from "../../../components/RecentDecksCard";
 import Link from "next/link";
 import { Deck } from "@/lib/api/models/types";
 
-async function HomePage() {
+export default async function HomePage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth-token")?.value;
 
@@ -106,5 +106,3 @@ async function HomePage() {
     </div>
   );
 }
-
-export default HomePage;
