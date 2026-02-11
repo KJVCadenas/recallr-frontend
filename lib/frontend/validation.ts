@@ -18,9 +18,25 @@ export const frontendCardSchema = z.object({
   back: z.string().min(1, "Back side is required"),
 });
 
+export const frontendProfileUpdateSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters").max(50, "Username must be 50 characters or less").optional(),
+  currentPassword: z.string().optional(),
+  newPassword: z.string().min(6, "New password must be at least 6 characters").optional(),
+  confirmPassword: z.string().optional(),
+}).refine((data) => {
+  if (data.newPassword && data.newPassword !== data.confirmPassword) {
+    return false;
+  }
+  return true;
+}, {
+  message: "New passwords do not match",
+  path: ["confirmPassword"],
+});
+
 export type FrontendLoginInput = z.infer<typeof frontendLoginSchema>;
 export type FrontendDeckInput = z.infer<typeof frontendDeckSchema>;
 export type FrontendCardInput = z.infer<typeof frontendCardSchema>;
+export type FrontendProfileUpdateInput = z.infer<typeof frontendProfileUpdateSchema>;
 
 // Sanitization functions
 export function sanitizeText(text: string): string {
@@ -95,6 +111,55 @@ export function validateAndSanitizeCard(data: {
       return { success: false, errors: error.issues.map(e => e.message) };
     }
     return { success: false, errors: ["Invalid card data"] };
+  }
+}
+
+export function validateAndSanitizeProfileUpdate(data: {
+  username: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}):
+  | { success: true; data: FrontendProfileUpdateInput }
+  | {
+      success: false;
+      fieldErrors: {
+        username?: string;
+        currentPassword?: string;
+        newPassword?: string;
+        confirmPassword?: string;
+      };
+    } {
+  try {
+    const sanitized = {
+      username: data.username.trim() ? sanitizeText(data.username) : undefined,
+      currentPassword: data.currentPassword.trim() ? data.currentPassword : undefined,
+      newPassword: data.newPassword.trim() ? data.newPassword : undefined,
+      confirmPassword: data.confirmPassword.trim() ? data.confirmPassword : undefined,
+    };
+
+    const validated = frontendProfileUpdateSchema.parse(sanitized);
+    return { success: true, data: validated };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const fieldErrors: {
+        username?: string;
+        currentPassword?: string;
+        newPassword?: string;
+        confirmPassword?: string;
+      } = {};
+
+      error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field && typeof field === "string" && !fieldErrors[field as keyof typeof fieldErrors]) {
+          fieldErrors[field as keyof typeof fieldErrors] = issue.message;
+        }
+      });
+
+      return { success: false, fieldErrors };
+    }
+
+    return { success: false, fieldErrors: { confirmPassword: "Invalid profile data" } };
   }
 }
 

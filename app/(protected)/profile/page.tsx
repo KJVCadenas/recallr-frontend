@@ -1,64 +1,68 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
-import { profileUpdateSchema } from "@/lib/api/models/schemas";
-import { useState, useEffect } from "react";
-
-type ProfileFormData = z.infer<typeof profileUpdateSchema>;
+import { validateAndSanitizeProfileUpdate } from "@/lib/frontend/validation";
+import { useState, useEffect, useRef } from "react";
 
 export default function ProfilePage() {
   const { data: profile, isLoading: isLoadingProfile } = useProfile();
   const updateProfileMutation = useUpdateProfile();
   const [successMessage, setSuccessMessage] = useState("");
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<ProfileFormData>({
-    resolver: zodResolver(profileUpdateSchema),
-    defaultValues: {
-      username: "",
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  });
+  const usernameRef = useRef<HTMLInputElement>(null);
+  const currentPasswordRef = useRef<HTMLInputElement>(null);
+  const newPasswordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    username?: string;
+    currentPassword?: string;
+    newPassword?: string;
+    confirmPassword?: string;
+  }>({});
 
   // Update form when profile loads
   useEffect(() => {
     if (profile) {
-      reset({
-        username: profile.username || "",
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+      usernameRef.current!.value = profile.username || "";
+      currentPasswordRef.current!.value = "";
+      newPasswordRef.current!.value = "";
+      confirmPasswordRef.current!.value = "";
     }
-  }, [profile, reset]);
+  }, [profile]);
 
-  const onSubmit = async (data: ProfileFormData) => {
+  const onSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setSuccessMessage("");
+    setFieldErrors({});
+
+    const username = usernameRef.current?.value || "";
+    const currentPassword = currentPasswordRef.current?.value || "";
+    const newPassword = newPasswordRef.current?.value || "";
+    const confirmPassword = confirmPasswordRef.current?.value || "";
+
+    const validation = validateAndSanitizeProfileUpdate({
+      username,
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    });
+
+    if (!validation.success) {
+      setFieldErrors(validation.fieldErrors);
+      return;
+    }
+
     try {
-      await updateProfileMutation.mutateAsync(data);
+      await updateProfileMutation.mutateAsync(validation.data);
       setSuccessMessage("Profile updated successfully!");
-      // Reset password fields
-      reset({
-        username: data.username,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+      currentPasswordRef.current!.value = "";
+      newPasswordRef.current!.value = "";
+      confirmPasswordRef.current!.value = "";
     } catch (error) {
-      // Error is handled by the mutation
       console.error("Profile update failed:", error);
     }
   };
@@ -100,7 +104,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={onSubmit} className="space-y-6">
             {/* Email - Read Only */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -121,11 +125,12 @@ export default function ProfilePage() {
               <Label htmlFor="username">Username (Optional)</Label>
               <Input
                 id="username"
-                {...register("username")}
+                ref={usernameRef}
+                defaultValue=""
                 placeholder="Enter a username"
               />
-              {errors.username && (
-                <p className="text-sm text-red-600">{errors.username.message}</p>
+              {fieldErrors.username && (
+                <p className="text-sm text-red-600">{fieldErrors.username}</p>
               )}
             </div>
 
@@ -141,11 +146,12 @@ export default function ProfilePage() {
                 <Input
                   id="currentPassword"
                   type="password"
-                  {...register("currentPassword")}
+                  ref={currentPasswordRef}
+                  defaultValue=""
                   placeholder="Enter current password"
                 />
-                {errors.currentPassword && (
-                  <p className="text-sm text-red-600">{errors.currentPassword.message}</p>
+                {fieldErrors.currentPassword && (
+                  <p className="text-sm text-red-600">{fieldErrors.currentPassword}</p>
                 )}
               </div>
 
@@ -154,11 +160,12 @@ export default function ProfilePage() {
                 <Input
                   id="newPassword"
                   type="password"
-                  {...register("newPassword")}
+                  ref={newPasswordRef}
+                  defaultValue=""
                   placeholder="Enter new password"
                 />
-                {errors.newPassword && (
-                  <p className="text-sm text-red-600">{errors.newPassword.message}</p>
+                {fieldErrors.newPassword && (
+                  <p className="text-sm text-red-600">{fieldErrors.newPassword}</p>
                 )}
               </div>
 
@@ -167,11 +174,12 @@ export default function ProfilePage() {
                 <Input
                   id="confirmPassword"
                   type="password"
-                  {...register("confirmPassword")}
+                  ref={confirmPasswordRef}
+                  defaultValue=""
                   placeholder="Confirm new password"
                 />
-                {errors.confirmPassword && (
-                  <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
+                {fieldErrors.confirmPassword && (
+                  <p className="text-sm text-red-600">{fieldErrors.confirmPassword}</p>
                 )}
               </div>
             </div>
