@@ -4,6 +4,9 @@ import { AuthToken } from "../models/types";
 
 const authService = new AuthService();
 
+export class UnauthorizedError extends Error {}
+export class ForbiddenError extends Error {}
+
 export async function authenticateRequest(
   request: NextRequest,
 ): Promise<AuthToken | null> {
@@ -33,4 +36,29 @@ export async function getCurrentUser(
   request: NextRequest,
 ): Promise<AuthToken | null> {
   return authenticateRequest(request);
+}
+
+export async function requireAuthOrThrow(
+  request: NextRequest,
+): Promise<AuthToken> {
+  const token = await authenticateRequest(request);
+  if (!token) {
+    throw new UnauthorizedError("Unauthorized");
+  }
+  return token;
+}
+
+export async function requireOwnershipOrAdmin(
+  request: NextRequest,
+  ownerId: string,
+  options?: { allowAdmin?: boolean },
+): Promise<AuthToken> {
+  const user = await requireAuthOrThrow(request);
+  if (user.userId === ownerId) {
+    return user;
+  }
+  if (options?.allowAdmin && user.isAdmin) {
+    return user;
+  }
+  throw new ForbiddenError("Forbidden");
 }

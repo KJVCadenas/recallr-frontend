@@ -35,12 +35,23 @@ export class DeckService {
     return deck;
   }
 
-  async updateDeck(id: string, updates: Partial<Deck>): Promise<Deck | null> {
+  async updateDeck(
+    id: string,
+    updates: Partial<Deck>,
+    userId?: string,
+  ): Promise<Deck | null> {
+    const deck = await this.getDeckById(id);
+    if (!deck) return null;
+    if (userId && deck.userId !== userId) return null;
     return this.storage.update("decks.json", id, updates);
   }
 
-  async deleteDeck(id: string): Promise<boolean> {
+  async deleteDeck(id: string, userId?: string): Promise<boolean> {
     // Also delete associated cards
+    const deck = await this.getDeckById(id);
+    if (!deck) return false;
+    if (userId && deck.userId !== userId) return false;
+
     const cards = await this.storage.findMany<Card>(
       "cards.json",
       (card) => card.deckId === id,

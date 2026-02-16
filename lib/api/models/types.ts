@@ -3,6 +3,7 @@ export interface User {
   email: string;
   username?: string; // Optional username field
   password: string; // hashed
+  isAdmin?: boolean;
   createdAt: string;
 }
 
@@ -27,5 +28,6 @@ export interface Card {
 export interface AuthToken {
   userId: string;
   email: string;
+  isAdmin?: boolean;
   exp: number;
 }

@@ -22,6 +22,7 @@ export class AuthService {
     const payload: AuthToken = {
       userId: user.id,
       email: user.email,
+      isAdmin: user.isAdmin ?? false,
       exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours
     };
     return jwt.sign(payload, JWT_SECRET);
@@ -54,6 +55,7 @@ export class AuthService {
       email,
       username,
       password: hashedPassword,
+      isAdmin: false,
       createdAt: new Date().toISOString(),
     };
 

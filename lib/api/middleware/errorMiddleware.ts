@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ForbiddenError, UnauthorizedError } from "./authMiddleware";
 
 export function handleApiError(error: unknown): NextResponse {
   console.error("API Error:", error);
@@ -14,7 +15,11 @@ export function handleApiError(error: unknown): NextResponse {
     return NextResponse.json({ error: error.message }, { status: 404 });
   }
 
-  if (error instanceof Error && error.message === "Unauthorized") {
+  if (error instanceof ForbiddenError) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  if (error instanceof UnauthorizedError) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

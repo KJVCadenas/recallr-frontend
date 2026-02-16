@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DeckService } from "../services/deckService";
 import { deckSchema } from "../models/schemas";
-import { requireAuth } from "../middleware/authMiddleware";
+import {
+  requireAuth,
+  requireOwnershipOrAdmin,
+} from "../middleware/authMiddleware";
 import { handleApiError } from "../middleware/errorMiddleware";
 import { createFlashcardGenerator } from "../services/flashcardGenerator/container";
 import {
@@ -12,6 +15,9 @@ import {
 import { validateImportText } from "../services/textValidator";
 
 const deckService = new DeckService();
+
+const notFoundResponse = () =>
+  NextResponse.json({ error: "Deck not found" }, { status: 404 });
 const flashcardGenerator = createFlashcardGenerator();
 
 export async function getDecks(request: NextRequest) {
@@ -48,14 +54,12 @@ export async function getDeck(
   { params }: { params: { id: string } },
 ) {
   try {
-    const user = await requireAuth(request);
-    if (!user)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
     const deck = await deckService.getDeckById(params.id);
     if (!deck) {
-      return NextResponse.json({ error: "Deck not found" }, { status: 404 });
+      return notFoundResponse();
     }
+
+    await requireOwnershipOrAdmin(request, deck.userId, { allowAdmin: true });
 
     return NextResponse.json(deck);
   } catch (error) {
@@ -68,19 +72,24 @@ export async function updateDeck(
   { params }: { params: { id: string } },
 ) {
   try {
-    const user = await requireAuth(request);
-    if (!user)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
     const body = await request.json();
     const updates = deckSchema.partial().parse(body);
-
-    const deck = await deckService.updateDeck(params.id, updates);
+    const deck = await deckService.getDeckById(params.id);
     if (!deck) {
-      return NextResponse.json({ error: "Deck not found" }, { status: 404 });
+      return notFoundResponse();
     }
 
-    return NextResponse.json(deck);
+    const user = await requireOwnershipOrAdmin(request, deck.userId);
+    const updatedDeck = await deckService.updateDeck(
+      params.id,
+      updates,
+      user.userId,
+    );
+    if (!updatedDeck) {
+      return notFoundResponse();
+    }
+
+    return NextResponse.json(updatedDeck);
   } catch (error) {
     return handleApiError(error);
   }
@@ -91,13 +100,15 @@ export async function deleteDeck(
   { params }: { params: { id: string } },
 ) {
   try {
-    const user = await requireAuth(request);
-    if (!user)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const deck = await deckService.getDeckById(params.id);
+    if (!deck) {
+      return notFoundResponse();
+    }
 
-    const deleted = await deckService.deleteDeck(params.id);
+    const user = await requireOwnershipOrAdmin(request, deck.userId);
+    const deleted = await deckService.deleteDeck(params.id, user.userId);
     if (!deleted) {
-      return NextResponse.json({ error: "Deck not found" }, { status: 404 });
+      return notFoundResponse();
     }
 
     return NextResponse.json({ message: "Deck deleted" });
