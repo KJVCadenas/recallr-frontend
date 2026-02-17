@@ -11,7 +11,7 @@ export function Navigation() {
             Home
           </Button>
         </Link>
-        <Link href="/my-decks">
+        <Link href="/decks">
           <Button variant="ghost" className="text-primary">
             My Decks
           </Button>

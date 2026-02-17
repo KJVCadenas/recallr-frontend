@@ -109,7 +109,7 @@ export default function MyDecksView({ decks }: MyDecksViewProps) {
                 whileHover={{ y: -10, rotate: 0.6 }}
                 transition={{ type: "spring", stiffness: 220, damping: 18 }}
               >
-                <Link href={`/deck/${deck.id}/review`}>
+                <Link href={`/decks/${deck.id}/review`}>
                   <motion.article className="group relative h-full overflow-hidden rounded-3xl border border-border/60 bg-card/80 p-6 shadow-sm">
                     <motion.div
                       className="pointer-events-none absolute inset-0"

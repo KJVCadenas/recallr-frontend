@@ -531,6 +531,33 @@ export default function MarketingPage() {
       {/* Product Section */}
       <ProductSection />
 
+      <section className="bg-background px-4 py-24">
+        <div className="mx-auto max-w-4xl space-y-6 rounded-3xl border border-border/70 bg-card/70 p-8 text-center shadow-lg">
+          <h2 className="text-3xl font-semibold text-foreground">
+            Ready to start recalling with Recallr?
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            Upload your notes, let Recallr generate smart flashcards, and study on a spaced repetition schedule—all without leaving this page.
+          </p>
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <Link href="/login">
+              <Button size="lg">Start Learning Now</Button>
+            </Link>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() =>
+                document
+                  .getElementById("problem-section")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+            >
+              See the Problem Again
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Footer Spacer */}
       <div className="h-20" />
     </div>

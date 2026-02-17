@@ -16,7 +16,7 @@ export default function RecentDecksCard({ deck }: RecentDecksCardProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/deck/${deck.id}/review`);
+    router.push(`/decks/${deck.id}/review`);
   };
 
   return (
