@@ -38,12 +38,6 @@ export default function MyDecksView({ decks }: MyDecksViewProps) {
   return (
     <div className="relative h-full overflow-y-auto px-4 py-10">
       <motion.div
-        className="pointer-events-none absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-      />
-      <motion.div
         className="pointer-events-none absolute -right-24 bottom-0 h-64 w-64 rounded-full bg-foreground/5 blur-3xl"
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
@@ -57,7 +51,20 @@ export default function MyDecksView({ decks }: MyDecksViewProps) {
         animate="show"
       >
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <motion.div className="space-y-3" variants={itemVariants}>
+          <motion.div
+            className="space-y-3 relative overflow-visible"
+            variants={itemVariants}
+          >
+            <motion.div
+              className="pointer-events-none absolute -top-8 left-0 h-52 w-52 rounded-full blur-3xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8 }}
+              style={{
+                background:
+                  "radial-gradient(circle at top left, rgba(129, 140, 248, 0.45), transparent 60%)",
+              }}
+            />
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
               Your Library
             </p>
