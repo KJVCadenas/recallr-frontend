@@ -132,7 +132,9 @@ export default function CreateDeckPage() {
               <Input
                 id="deckName"
                 value={deckName}
-                onChange={(e) => setDeckName(sanitizeText(e.target.value))}
+                onChange={(e) =>
+                  setDeckName(sanitizeText(e.target.value, { trim: false }))
+                }
                 placeholder="Enter deck name"
                 required
               />
@@ -145,7 +147,9 @@ export default function CreateDeckPage() {
               <Textarea
                 id="description"
                 value={description}
-                onChange={(e) => setDescription(sanitizeText(e.target.value))}
+                onChange={(e) =>
+                  setDescription(sanitizeText(e.target.value, { trim: false }))
+                }
                 placeholder="Enter deck description"
                 rows={3}
               />

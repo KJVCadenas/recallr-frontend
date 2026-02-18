@@ -39,9 +39,14 @@ export type FrontendCardInput = z.infer<typeof frontendCardSchema>;
 export type FrontendProfileUpdateInput = z.infer<typeof frontendProfileUpdateSchema>;
 
 // Sanitization functions
-export function sanitizeText(text: string): string {
-  // Trim whitespace and sanitize HTML
-  return DOMPurify.sanitize(text.trim(), {
+interface SanitizeTextOptions {
+  trim?: boolean;
+}
+
+export function sanitizeText(text: string, options?: SanitizeTextOptions): string {
+  // Optionally trim whitespace and always sanitize HTML
+  const normalized = options?.trim === false ? text : text.trim();
+  return DOMPurify.sanitize(normalized, {
     ALLOWED_TAGS: [], // No HTML tags allowed
     ALLOWED_ATTR: [], // No attributes allowed
   });
